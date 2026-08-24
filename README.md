@@ -1,13 +1,23 @@
 # FlyRank Capstone Widget Platform
 
-A local embeddable widget and lead-capture API. A customer creates a widget, pastes one script tag into a second-origin HTML page, and receives validated, rate-limited submissions in a tenant-scoped dashboard.
+A local embeddable widget and lead-capture API built around two concerns from my portfolio: protecting untrusted public input and turning submissions into usable data.
+
+The system lets a tenant create a widget, give a customer one script tag, and collect validated submissions from a different origin. The public path includes CORS, payload validation, a honeypot, per-widget rate limiting, optional geo enrichment, SQLite persistence, and a background notification task. The dashboard endpoint exposes counts by widget.
 
 ## Architecture
 
     owner -> authenticated widget API -> SQLite
     customer page -> cached widget config and versioned script
-    visitor -> CORS submission API -> validation -> abuse checks -> geo fallback -> storage -> background notification
-    owner -> dashboard stats API
+    visitor -> CORS submission API -> validation -> abuse checks -> geo lookup -> storage
+    owner -> tenant-scoped dashboard stats
+
+## Security angle
+
+The client is treated as hostile. Admin routes require a token and tenant header. Public submissions are size-limited, validated before storage, protected by a honeypot and rate limit, and stored with the widget tenant. Secrets are environment variables only. The local side effect can fail without changing the stored result.
+
+## Data engineering angle
+
+The submission path is an ingestion pipeline: validate, normalize, enrich, persist, and aggregate. The schema keeps widget ownership and submission facts separate, while the dashboard query provides a small analytical view by widget. The geo provider is optional and can degrade to an unknown value.
 
 ## Run
 
@@ -22,10 +32,6 @@ Serve customer-site from another origin:
     python3 -m http.server 5500 --directory customer-site
 
 Open http://localhost:5500.
-
-## API
-
-Admin endpoints require x-admin-token and x-tenant-id headers. The public endpoints are /widgets/{id}/config, /widget.v1.js, and /submissions. Dashboard stats are available at /dashboard/stats for the authenticated tenant.
 
 ## Tests
 
