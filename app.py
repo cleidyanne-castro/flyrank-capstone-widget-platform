@@ -16,6 +16,7 @@ ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:5500,http://localhost:8
 app = FastAPI(title="Embeddable Widget Platform")
 app.add_middleware(CORSMiddleware, allow_origins=ORIGINS, allow_methods=["*"], allow_headers=["*"])
 limits: dict[str, deque[float]] = defaultdict(deque)
+rate_buckets = limits
 
 def db():
     conn = sqlite3.connect(DB_PATH)
