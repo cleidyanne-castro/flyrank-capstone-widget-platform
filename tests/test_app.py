@@ -24,7 +24,8 @@ def test_config_has_cache_header(widget):
 
 def test_cors_preflight():
     r = client.options('/submissions', headers={'Origin':'http://localhost:5500','Access-Control-Request-Method':'POST'})
-    assert r.status_code == 204
+    assert r.status_code == 200
+    assert r.headers['access-control-allow-origin'] == 'http://localhost:5500'
 
 def test_invalid_payload(widget):
     r = client.post('/submissions', json={'widget_id':widget,'data':{'x':'a'}})
