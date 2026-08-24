@@ -1,0 +1,12 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Cleidyanne Castro//Portfolio Review//EN
+BEGIN:VEVENT
+UID:portfolio-review-cleidyanne@example.com
+DTSTAMP:20260824T120000Z
+DTSTART:20260907T090000
+RRULE:FREQ=MONTHLY;BYDAY=1MO
+SUMMARY:Review portfolio and add the next case study
+DESCRIPTION:Review the capstone repository and publish the next finished data or security case study.
+END:VEVENT
+END:VCALENDAR
