@@ -150,6 +150,9 @@ def submit(payload: SubmissionIn, request: Request, background_tasks: Background
     conn = db()
     row = get_widget(conn, payload.widget_id)
     raw = json.dumps(payload.model_dump())
+    required = json.loads(row["fields"])
+    if any(not payload.data.get(field) for field in required):
+        raise HTTPException(422, "required field missing")
     if len(raw) > 6000:
         raise HTTPException(413, "payload too large")
     if payload.honeypot:
