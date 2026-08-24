@@ -2,7 +2,7 @@
 
 A local-first image metadata pipeline for relevance scoring and safe auto-tagging. It accepts metadata rather than uploading personal images.
 
-It validates records, computes a deterministic vector score, rejects low-confidence decisions, and keeps an audit-ready result. A model provider can be added later behind the same boundary.
+It validates records, computes a deterministic vector score, rejects low-confidence decisions, and keeps an audit-ready result. The provider boundary allows a model-backed scorer without changing the ingestion contract.
 
 Run:
 
