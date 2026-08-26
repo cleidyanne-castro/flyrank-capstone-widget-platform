@@ -1,1 +1,21 @@
-<!doctype html><html><head><meta charset="utf-8"><title>Widget customer site</title></head><body><h1>Customer site on a different origin</h1><div id="widget"></div><script src="http://localhost:8000/widget.v1.js?id=demo"></script></body></html>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Widget customer site</title>
+    <style>
+      body { font-family: system-ui, sans-serif; margin: 3rem auto; max-width: 42rem; padding: 0 1rem; }
+      #widget { border: 1px solid #d0d7de; border-radius: 0.75rem; margin-top: 2rem; padding: 1.25rem; }
+      label, input, button { display: block; margin-top: 0.75rem; }
+      input { box-sizing: border-box; padding: 0.6rem; width: 100%; }
+      button { padding: 0.6rem 1rem; }
+    </style>
+  </head>
+  <body>
+    <h1>Customer site on a different origin</h1>
+    <p>This page demonstrates the widget loading from the API on port 8000.</p>
+    <div id="widget"></div>
+    <script src="http://localhost:8000/widget.v1.js?id=demo"></script>
+  </body>
+</html>

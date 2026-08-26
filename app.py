@@ -138,7 +138,59 @@ def widget_config(widget_id: str, response: Response):
 
 @app.get("/widget.v1.js")
 def widget_script():
-    script = "(function(){const s=document.currentScript,id=new URL(s.src).searchParams.get('id');fetch('/widgets/'+id+'/config').then(r=>r.json()).then(c=>{const root=document.createElement('div');root.innerHTML='<h3>'+c.title+'</h3><p>'+c.description+'</p><form><input name=&quot;email&quot; type='email' required><input name=&quot;website&quot; tabindex='-1' autocomplete='off' style='display:none'><button>'+c.button_text+'</button></form>';s.after(root);root.querySelector('form').onsubmit=async e=>{e.preventDefault();const data=Object.fromEntries(new FormData(e.target));await fetch('/submissions',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({widget_id:id,data,honeypot:data.website,idempotency_key:crypto.randomUUID()})});};});})();"
+    script = r'''(function () {
+  const script = document.currentScript;
+  const widgetId = new URL(script.src).searchParams.get("id");
+
+  fetch("/widgets/" + widgetId + "/config")
+    .then((response) => response.json())
+    .then((config) => {
+      const root = document.createElement("div");
+      root.innerHTML = `
+        <h3></h3>
+        <p></p>
+        <form>
+          <label>Email <input name="email" type="email" required></label>
+          <input name="website" tabindex="-1" autocomplete="off" style="display:none">
+          <button type="submit"></button>
+          <p role="status" aria-live="polite"></p>
+        </form>`;
+      root.querySelector("h3").textContent = config.title;
+      root.querySelector("p").textContent = config.description;
+      root.querySelector("button").textContent = config.button_text;
+      const form = root.querySelector("form");
+      const status = root.querySelector("[role=status]");
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        status.textContent = "Sending...";
+        const data = Object.fromEntries(new FormData(form));
+        try {
+          const response = await fetch("/submissions", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({
+              widget_id: widgetId,
+              data,
+              honeypot: data.website,
+              idempotency_key: crypto.randomUUID()
+            })
+          });
+          if (!response.ok) throw new Error("submission failed");
+          status.textContent = "Submission stored.";
+          form.reset();
+        } catch (error) {
+          status.textContent = "Submission failed. Try again.";
+        }
+      });
+      script.after(root);
+    })
+    .catch(() => {
+      const status = document.createElement("p");
+      status.textContent = "Widget configuration could not be loaded.";
+      script.after(status);
+    });
+})();'''
     return Response(script, media_type="application/javascript", headers={"Cache-Control": "public, max-age=31536000, immutable"})
 
 @app.options("/submissions")

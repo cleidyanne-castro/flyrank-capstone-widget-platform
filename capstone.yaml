@@ -1,6 +1,8 @@
 run: uvicorn app:app --reload
 seed: python seed.py
 test: pytest -q
+test_count: 12
+customer_site: python3 -m http.server 5500 --directory customer-site
 base_url: http://localhost:8000
 endpoints:
   - POST /admin/widgets
