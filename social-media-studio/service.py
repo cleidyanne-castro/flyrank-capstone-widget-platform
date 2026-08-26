@@ -12,11 +12,13 @@ class PublishRequest(BaseModel):
 def signature(payload):return hmac.new(SECRET,payload.encode(),hashlib.sha256).hexdigest()
 @app.post('/v1/publish')
 def publish(req:PublishRequest):
-    if req.idempotency_key in PUBLISHED:return {'status':'duplicate',**PUBLISHED[req.idempotency_key]}
+    if req.idempotency_key in PUBLISHED:
+        row=PUBLISHED[req.idempotency_key]
+        return {'status':'duplicate','publish_status':row['status'],**{k:v for k,v in row.items() if k!='status'}}
     if req.platform=='mock' and req.text.strip().lower()=='rate-limit':raise HTTPException(status_code=429,detail='platform rate limit',headers={'Retry-After':'30'})
-    row={'idempotency_key':req.idempotency_key,'platform':req.platform,'status':'scheduled' if req.scheduled_for else 'published','text_length':len(req.text),'callback_signature':signature(req.idempotency_key)}
+    row={'idempotency_key':req.idempotency_key,'platform':req.platform,'status':'scheduled' if req.scheduled_for is not None else 'published','text_length':len(req.text),'callback_signature':signature(req.idempotency_key)}
     PUBLISHED[req.idempotency_key]=row
-    return {'status':'accepted',**row}
+    return {'status':'accepted','publish_status':row['status'],**{k:v for k,v in row.items() if k!='status'}}
 @app.post('/v1/callback')
 async def callback(request:Request,x_signature:str|None=Header(default=None)):
     raw=await request.body();expected=hmac.new(SECRET,raw,hashlib.sha256).hexdigest()

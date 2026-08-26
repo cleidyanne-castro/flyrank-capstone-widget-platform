@@ -14,3 +14,13 @@ def test_signed_callback():
     raw=json.dumps({'key':'post-0001'}).encode();sig=hmac.new(SECRET,raw,hashlib.sha256).hexdigest()
     assert client.post('/v1/callback',content=raw,headers={'x-signature':sig}).json()=={'status':'verified'}
     assert client.post('/v1/callback',content=raw,headers={'x-signature':'bad'}).status_code==401
+
+def test_scheduled_status():
+    p={'idempotency_key':'post-0003','platform':'mock','text':'scheduled update','scheduled_for':0}
+    r=client.post('/v1/publish',json=p)
+    assert r.status_code==200
+    assert r.json()['status']=='accepted'
+    assert client.get('/v1/status/post-0003').json()['status']=='scheduled'
+
+def test_health():
+    assert client.get('/health').json()=={'status':'ok'}
